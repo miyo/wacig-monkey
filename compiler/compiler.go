@@ -3,11 +3,12 @@ package compiler
 import (
 	"monkey/ast"
 	"monkey/code"
+	"monkey/object"
 )
 
 type Compiler struct {
 	instructions code.Instructions
-	constatns    []object.Object
+	constants    []object.Object
 }
 
 func New() *Compiler {
@@ -24,7 +25,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 func (c *Compiler) Bytecode() *Bytecode {
 	return &Bytecode{
 		Instructions: c.instructions,
-		Constants:    c.constatns,
+		Constants:    c.constants,
 	}
 }
 
