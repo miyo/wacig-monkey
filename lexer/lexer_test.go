@@ -192,6 +192,7 @@ func TestNextToken4(t *testing.T) {
 	"foo bar"
 	[1, 2];
 	{"foo": "bar"}
+	macro(x, y) { x + y; };
 	`
 	tests := []struct {
 		expectedType    token.TokenType
@@ -218,6 +219,19 @@ func TestNextToken4(t *testing.T) {
 		{token.COLON, ":"},
 		{token.STRING, "bar"},
 		{token.RBRACE, "}"},
+		{token.MACRO, "macro"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 	l := New(input)
