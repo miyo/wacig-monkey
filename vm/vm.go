@@ -11,6 +11,7 @@ const StackSize = 2048
 
 var True = &object.Boolean{Value: true}
 var False = &object.Boolean{Value: false}
+var Null = &object.Null{}
 
 type VM struct {
 	constants    []object.Object
@@ -39,6 +40,11 @@ func (vm *VM) Run() error {
 	for ip := 0; ip < len(vm.instructions); ip++ {
 		op := code.Opcode(vm.instructions[ip])
 		switch op {
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
 		case code.OpConstant:
 			constIndex := code.ReadUint16(vm.instructions[ip+1:])
 			ip += 2
@@ -73,6 +79,16 @@ func (vm *VM) Run() error {
 			}
 		case code.OpPop:
 			vm.pop()
+		case code.OpJump:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip = pos - 1
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			condition := vm.pop()
+			if !isTruthy(condition) {
+				ip = pos - 1
+			}
 		}
 	}
 	return nil
@@ -88,13 +104,10 @@ func (vm *VM) push(o object.Object) error {
 	return nil
 }
 
-func (vm *VM) pop() (object.Object, error) {
-	if vm.sp < 1 {
-		return nil, fmt.Errorf("stack underflow")
-	}
+func (vm *VM) pop() object.Object {
 	o := vm.stack[vm.sp-1]
 	vm.sp--
-	return o, nil
+	return o
 }
 
 func (vm *VM) LastPoppedStackElem() object.Object {
@@ -102,14 +115,8 @@ func (vm *VM) LastPoppedStackElem() object.Object {
 }
 
 func (vm *VM) executeBinaryOperation(op code.Opcode) error {
-	right, err := vm.pop()
-	if err != nil {
-		return err
-	}
-	left, err := vm.pop()
-	if err != nil {
-		return nil
-	}
+	right := vm.pop()
+	left := vm.pop()
 	rightT := right.Type()
 	leftT := left.Type()
 	if leftT == object.INTEGER_OBJ && rightT == object.INTEGER_OBJ {
@@ -178,10 +185,7 @@ func (vm *VM) executeBinaryBooleanOperation(op code.Opcode, left object.Object, 
 }
 
 func (vm *VM) executeMinusOperation() error {
-	v, err := vm.pop()
-	if err != nil {
-		return err
-	}
+	v := vm.pop()
 	vv, ok := v.(*object.Integer)
 	if !ok {
 		return fmt.Errorf("unsupported types for minus operation: %s", v.Type())
@@ -191,10 +195,7 @@ func (vm *VM) executeMinusOperation() error {
 }
 
 func (vm *VM) executeBangOperation() error {
-	v, err := vm.pop()
-	if err != nil {
-		return err
-	}
+	v := vm.pop()
 	switch v := v.(type) {
 	case *object.Boolean:
 		if v.Value {
@@ -208,4 +209,15 @@ func (vm *VM) executeBangOperation() error {
 		vm.push(False)
 	}
 	return nil
+}
+
+func isTruthy(obj object.Object) bool {
+	switch obj := obj.(type) {
+	case *object.Boolean:
+		return obj.Value
+	case *object.Null:
+		return false
+	default:
+		return true
+	}
 }
