@@ -222,6 +222,49 @@ func TestConditionals(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestGlobalLetStatement(t *testing.T) {
+
+	tests := []compilerTestCase{
+		{
+			input:             `let one = 1; let two = 2`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 1),
+			},
+		},
+		{
+			input:             `let one = 1; one;`,
+			expectedConstants: []interface{}{1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			let one = 1
+			let two = one
+			two
+			`,
+			expectedConstants: []interface{}{1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpGetGlobal, 1),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+	runCompilerTests(t, tests)
+}
+
 func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 	for _, tt := range tests {
@@ -252,11 +295,11 @@ func parse(input string) *ast.Program {
 func testInstructions(expected []code.Instructions, actual code.Instructions) error {
 	concatted := concateInstructions(expected)
 	if len(actual) != len(concatted) {
-		return fmt.Errorf("wrong instruction length.\nwant=%q\ngot=%q", concatted, actual)
+		return fmt.Errorf("wrong instruction length.\nwant=%q\ngot =%q", concatted, actual)
 	}
 	for i, ins := range concatted {
 		if ins != actual[i] {
-			return fmt.Errorf("wrong instruction at %d.\nwant=%q\ngot=%q", i, concatted, actual)
+			return fmt.Errorf("wrong instruction at %d.\nwant=%q\ngot =%q", i, concatted, actual)
 		}
 	}
 	return nil
