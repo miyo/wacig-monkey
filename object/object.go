@@ -30,6 +30,7 @@ const (
 	QUOTE_OBJ             = "QUOTE"
 	MACRO_OBJ             = "MACRO"
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION_OBJ"
+	CLOSURE_OBJ           = "CLOSURE"
 )
 
 type Integer struct {
@@ -234,3 +235,12 @@ type CompiledFunction struct {
 func (c *CompiledFunction) Type() ObjectType { return COMPILED_FUNCTION_OBJ }
 
 func (c *CompiledFunction) Inspect() string { return fmt.Sprintf("CompiledFunction[%p]", c) }
+
+type Closure struct {
+	Fn   *CompiledFunction
+	Free []Object
+}
+
+func (c *Closure) Type() ObjectType { return COMPILED_FUNCTION_OBJ }
+
+func (c *Closure) Inspect() string { return fmt.Sprintf("Closure[%p]", c) }

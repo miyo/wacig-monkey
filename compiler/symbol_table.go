@@ -6,6 +6,7 @@ const (
 	LocalScope   SymbolScope = "LOCAL"
 	GlobalScope  SymbolScope = "GLOBAL"
 	BuiltinScope SymbolScope = "BUILTIN"
+	FreeScope    SymbolScope = "FREE"
 )
 
 type Symbol struct {
@@ -18,11 +19,13 @@ type SymbolTable struct {
 	Outer          *SymbolTable
 	store          map[string]Symbol
 	numDefinitions int
+	FreeSymbols    []Symbol
 }
 
 func NewSymbolTable() *SymbolTable {
 	s := make(map[string]Symbol)
-	return &SymbolTable{store: s, numDefinitions: 0}
+	free := []Symbol{}
+	return &SymbolTable{store: s, numDefinitions: 0, FreeSymbols: free}
 }
 
 func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
