@@ -226,7 +226,9 @@ func (m *Macro) Inspect() string {
 }
 
 type CompiledFunction struct {
-	Instructions code.Instructions
+	Instructions  code.Instructions
+	NumLocals     int
+	NumParameters int
 }
 
 func (c *CompiledFunction) Type() ObjectType { return COMPILED_FUNCTION_OBJ }
