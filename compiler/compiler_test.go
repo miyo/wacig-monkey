@@ -807,14 +807,14 @@ func TestClosure(t *testing.T) {
 		},
 		{
 			input: `
-			fn(a){
-				fn(b){
-					fn(c){
-						a + b + c
-					}
-				}
-			}
-			`,
+		 	fn(a){
+		 		fn(b){
+		 			fn(c){
+		 				a + b + c
+		 			}
+		 		}
+		 	};
+		 	`,
 			expectedConstants: []interface{}{
 				[]code.Instructions{
 					code.Make(code.OpGetFree, 0),
@@ -843,19 +843,19 @@ func TestClosure(t *testing.T) {
 		},
 		{
 			input: `
-			let global = 55;
-			fn(){
-				let a = 66;
-					fn(){
-						let b = 77;
-						fn(){
-							let c = 88;
-							global + a + b + c
-						}
-					}
-				}
-			}
-			`,
+		 	let global = 55;
+		 	fn(){
+		 		let a = 66;
+		 			fn(){
+		 				let b = 77;
+		 				fn(){
+		 					let c = 88;
+		 					global + a + b + c
+		 				}
+		 			}
+		 		}
+		 	}
+		 	`,
 			expectedConstants: []interface{}{
 				55,
 				66,
@@ -864,7 +864,8 @@ func TestClosure(t *testing.T) {
 				[]code.Instructions{
 					code.Make(code.OpConstant, 3),
 					code.Make(code.OpSetLocal, 0),
-					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpGetGlobal, 0),
+					code.Make(code.OpGetFree, 0),
 					code.Make(code.OpAdd),
 					code.Make(code.OpGetFree, 1),
 					code.Make(code.OpAdd),
@@ -893,6 +894,7 @@ func TestClosure(t *testing.T) {
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpClosure, 6, 0),
 				code.Make(code.OpPop),
+				code.Make(code.OpPop), // ?????
 			},
 		},
 	}
